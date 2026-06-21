@@ -1,8 +1,9 @@
-import { Search } from 'lucide-react'
+import { ExternalLink, Search } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { EmptyState, ErrorState, LoadingState } from '../../components/ui/AsyncState'
 import api from '../../services/api'
 import { formatCurrency } from '../../utils/format'
-import { EmptyState, ErrorState, LoadingState } from '../../components/ui/AsyncState'
 
 const orderTransitions = {
   Nuevo: ['Confirmado', 'Cancelado'],
@@ -62,7 +63,12 @@ export default function AdminOrders() {
         {filteredOrders.map((order) => (
           <article key={order._id} className="grid gap-4 border-b border-gold/10 p-5 xl:grid-cols-[1fr_150px_180px_180px] xl:items-center">
             <div>
-              <h2 className="font-display text-2xl font-bold text-forest">{order.orderNumber}</h2>
+              <div className="flex items-center gap-3">
+                <h2 className="font-display text-2xl font-bold text-forest">{order.orderNumber}</h2>
+                <Link to={`/admin/pedidos/${order._id}`} className="flex items-center gap-1 text-xs font-semibold text-terracotta hover:underline">
+                  <ExternalLink size={13} /> Ver detalle
+                </Link>
+              </div>
               <p className="text-sm text-incense/80">{order.customer.fullName} · {order.customer.phone} · {order.customer.city}</p>
               <p className="mt-2 text-sm font-semibold text-terracotta">{formatCurrency(order.total)}</p>
               <p className="mt-1 text-xs text-incense/60">{order.items.map((item) => `${item.quantity} x ${item.name}`).join(', ')}</p>

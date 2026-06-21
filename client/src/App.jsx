@@ -16,7 +16,9 @@ const Login = lazy(() => import('./pages/admin/Login'))
 const Dashboard = lazy(() => import('./pages/admin/Dashboard'))
 const AdminProducts = lazy(() => import('./pages/admin/AdminProducts'))
 const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'))
+const AdminOrderDetail = lazy(() => import('./pages/admin/AdminOrderDetail'))
 const AdminCategories = lazy(() => import('./pages/admin/AdminCategories'))
+const AdminInventory = lazy(() => import('./pages/admin/AdminInventory'))
 
 function StaticRoute() {
   const location = useLocation()
@@ -48,7 +50,9 @@ export default function App() {
           <Route index element={<Dashboard />} />
           <Route path="productos" element={<AdminProducts />} />
           <Route path="categorias" element={<AdminCategories />} />
+          <Route path="inventario" element={<AdminInventory />} />
           <Route path="pedidos" element={<AdminOrders />} />
+          <Route path="pedidos/:id" element={<AdminOrderDetail />} />
         </Route>
       </Route>
 
