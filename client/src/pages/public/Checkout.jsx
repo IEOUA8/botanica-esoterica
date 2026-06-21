@@ -50,6 +50,23 @@ export default function Checkout() {
 
   return (
     <main className="bg-warm py-12">
+      {/* Trust badges */}
+      <div className="mb-8 border-b border-gold/12 pb-8">
+        <div className="section-shell grid grid-cols-3 gap-4">
+          {[
+            ['🔒', 'Pago seguro', 'Tus datos están protegidos'],
+            ['💬', 'Confirmación por WhatsApp', 'Te contactamos de inmediato'],
+            ['📦', 'Envío garantizado', 'Nacional e internacional'],
+          ].map(([icon, title, desc]) => (
+            <div key={title} className="flex flex-col items-center gap-1.5 text-center">
+              <span className="text-2xl">{icon}</span>
+              <p className="text-xs font-bold text-deep">{title}</p>
+              <p className="hidden text-[10px] text-incense/50 sm:block">{desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="section-shell grid gap-8 lg:grid-cols-[1fr_380px]">
         <form onSubmit={handleSubmit(submit)} className="rounded-lg border border-gold/20 bg-white p-6 shadow-soft" noValidate>
           <h1 className="font-display text-5xl font-bold text-forest">Checkout sin registro</h1>

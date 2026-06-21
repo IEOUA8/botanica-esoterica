@@ -18,6 +18,8 @@ export default {
       },
       boxShadow: {
         soft: '0 18px 45px rgba(6, 61, 46, 0.12)',
+        card: '0 4px 20px rgba(6, 61, 46, 0.06)',
+        'card-hover': '0 12px 36px rgba(6, 61, 46, 0.16)',
       },
     },
   },

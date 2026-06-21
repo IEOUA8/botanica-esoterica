@@ -19,6 +19,7 @@ const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'))
 const AdminOrderDetail = lazy(() => import('./pages/admin/AdminOrderDetail'))
 const AdminCategories = lazy(() => import('./pages/admin/AdminCategories'))
 const AdminInventory = lazy(() => import('./pages/admin/AdminInventory'))
+const NotFound = lazy(() => import('./pages/public/NotFound'))
 
 function StaticRoute() {
   const location = useLocation()
@@ -56,7 +57,9 @@ export default function App() {
         </Route>
       </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route element={<PublicLayout />}>
+        <Route path="*" element={<NotFound />} />
+      </Route>
       </Routes>
     </Suspense>
   )
