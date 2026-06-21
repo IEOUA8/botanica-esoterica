@@ -27,9 +27,25 @@ function sortQuery(sort) {
 }
 
 async function listProducts(req, res) {
-  if (!dbReady()) return res.json(demoStore.listProducts(req.query));
-  const products = await Product.find(mongoQuery(req.query)).sort(sortQuery(req.query.sort)).populate('category');
-  return res.json(products);
+  const page = Number(req.query.page || 1);
+  const limit = Number(req.query.limit || 12);
+  if (!dbReady()) {
+    const allProducts = demoStore.listProducts(req.query);
+    const items = allProducts.slice((page - 1) * limit, page * limit);
+    const intentions = [...new Set(demoStore.products.filter((product) => product.isActive).map((product) => product.intention))].sort();
+    return res.json({ items, pagination: pagination(page, limit, allProducts.length), facets: { intentions } });
+  }
+  const filter = mongoQuery(req.query);
+  const [items, total, intentions] = await Promise.all([
+    Product.find(filter).sort(sortQuery(req.query.sort)).skip((page - 1) * limit).limit(limit).populate('category'),
+    Product.countDocuments(filter),
+    Product.distinct('intention', { isActive: true }),
+  ]);
+  return res.json({ items, pagination: pagination(page, limit, total), facets: { intentions: intentions.sort() } });
+}
+
+function pagination(page, limit, total) {
+  return { page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)) };
 }
 
 async function featuredProducts(req, res) {

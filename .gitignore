@@ -5,6 +5,7 @@ client/.node_modules.stale/
 client/.node_modules.*/
 /server/node_modules*
 server/.node_modules.stale/
+server/.node_modules.*/
 
 .env
 .env.*

@@ -2,6 +2,7 @@ import { MessageCircle, Minus, Plus, ShoppingBag } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import Button from '../../components/ui/Button'
+import { ErrorState, LoadingState } from '../../components/ui/AsyncState'
 import api, { WHATSAPP_NUMBER } from '../../services/api'
 import { useCartStore } from '../../store/cartStore'
 import { encodeWhatsapp, formatCurrency } from '../../utils/format'
@@ -10,15 +11,21 @@ export default function ProductDetail() {
   const { slug } = useParams()
   const [product, setProduct] = useState(null)
   const [quantity, setQuantity] = useState(1)
+  const [error, setError] = useState('')
+  const [requestVersion, setRequestVersion] = useState(0)
   const addItem = useCartStore((state) => state.addItem)
 
   useEffect(() => {
-    api.get(`/products/${slug}`).then((res) => setProduct(res.data))
-  }, [slug])
+    const timer = setTimeout(() => {
+      setProduct(null)
+      setError('')
+      api.get(`/products/${slug}`).then((res) => setProduct(res.data)).catch((err) => setError(err.response?.data?.message || 'No se pudo cargar el producto.'))
+    }, 0)
+    return () => clearTimeout(timer)
+  }, [slug, requestVersion])
 
-  if (!product) {
-    return <main className="section-shell py-16 font-semibold text-forest">Cargando producto...</main>
-  }
+  if (error) return <main className="section-shell py-16"><ErrorState message={error} onRetry={() => setRequestVersion((value) => value + 1)} /></main>
+  if (!product) return <main className="section-shell py-16"><LoadingState message="Cargando producto..." /></main>
 
   const whatsappMessage = `Hola, quiero información para comprar ${quantity} x ${product.name}.`
   const outOfStock = product.stock <= 0
@@ -27,7 +34,7 @@ export default function ProductDetail() {
     <main className="bg-warm py-12">
       <div className="section-shell grid gap-10 lg:grid-cols-[0.95fr_1.05fr]">
         <div className="overflow-hidden rounded-lg bg-ritual shadow-soft">
-          <img className="aspect-square w-full object-cover" src={product.mainImage} alt={product.name} />
+          <img className="aspect-square w-full object-cover" src={product.mainImage} alt={product.name} decoding="async" />
         </div>
         <section>
           <Link to="/tienda" className="text-sm font-bold uppercase tracking-[0.18em] text-terracotta">Volver a tienda</Link>

@@ -1,9 +1,11 @@
 import { ArrowRight, Globe2, HeartHandshake, MessageCircle, ShoppingBag, Sparkles } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import api, { WHATSAPP_NUMBER } from '../../services/api'
 import Button from '../../components/ui/Button'
 import ProductCard from '../../components/product/ProductCard'
+import { ErrorState, LoadingState } from '../../components/ui/AsyncState'
 
 const heroImage = 'https://images.unsplash.com/photo-1607344645866-009c320c5ab8?auto=format&fit=crop&w=1400&q=85'
 
@@ -24,13 +26,21 @@ const steps = [
 export default function Home() {
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [requestVersion, setRequestVersion] = useState(0)
 
   useEffect(() => {
-    Promise.all([api.get('/products/featured'), api.get('/categories')]).then(([productRes, categoryRes]) => {
-      setProducts(productRes.data)
-      setCategories(categoryRes.data.slice(0, 4))
-    })
-  }, [])
+    const timer = setTimeout(() => {
+      setLoading(true)
+      setError('')
+      Promise.all([api.get('/products/featured'), api.get('/categories')]).then(([productRes, categoryRes]) => {
+        setProducts(productRes.data)
+        setCategories(categoryRes.data.slice(0, 4))
+      }).catch(() => setError('No pudimos cargar los productos destacados.')).finally(() => setLoading(false))
+    }, 0)
+    return () => clearTimeout(timer)
+  }, [requestVersion])
 
   return (
     <main>
@@ -82,14 +92,14 @@ export default function Home() {
           </div>
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
             {categories.map((category) => (
-              <a key={category._id} href={`/tienda?category=${category.slug}`} className="group relative aspect-[4/5] overflow-hidden rounded-lg">
-                <img className="h-full w-full object-cover transition duration-500 group-hover:scale-105" src={category.image} alt={category.name} />
+              <Link key={category._id} to={`/tienda?category=${category.slug}`} className="group relative aspect-[4/5] overflow-hidden rounded-lg">
+                <img className="h-full w-full object-cover transition duration-500 group-hover:scale-105" src={category.image} alt={category.name} loading="lazy" decoding="async" />
                 <div className="image-overlay absolute inset-0" />
                 <div className="absolute inset-x-0 bottom-0 p-5 text-white">
                   <h3 className="font-display text-3xl font-bold">{category.name}</h3>
                   <p className="mt-2 text-sm leading-6 text-ritual/85">{category.description}</p>
                 </div>
-              </a>
+              </Link>
             ))}
           </div>
         </div>
@@ -101,9 +111,7 @@ export default function Home() {
             <p className="text-sm font-bold uppercase tracking-[0.22em] text-terracotta">Nuestros productos</p>
             <h2 className="mt-2 font-display text-4xl font-bold text-forest">Elementos espirituales seleccionados</h2>
           </div>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {products.map((product) => <ProductCard key={product._id} product={product} />)}
-          </div>
+          {loading ? <LoadingState /> : error ? <ErrorState message={error} onRetry={() => setRequestVersion((value) => value + 1)} /> : <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">{products.map((product) => <ProductCard key={product._id} product={product} />)}</div>}
         </div>
       </section>
 
@@ -145,7 +153,7 @@ export default function Home() {
             'https://images.unsplash.com/photo-1600421683121-ef6f943f8cba?auto=format&fit=crop&w=700&q=80',
             'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=700&q=80',
           ].map((image) => (
-            <img key={image} className="aspect-square rounded-lg object-cover shadow-soft" src={image} alt="Galería visual de productos espirituales" />
+            <img key={image} className="aspect-square rounded-lg object-cover shadow-soft" src={image} alt="Galería visual de productos espirituales" loading="lazy" decoding="async" />
           ))}
         </div>
       </section>
@@ -157,11 +165,7 @@ export default function Home() {
             <h2 className="mt-4 font-display text-4xl font-bold text-forest">Recibe rituales, novedades y ofertas especiales</h2>
             <p className="mt-3 text-incense/80">También puedes escribirnos por WhatsApp para recibir asesoría antes de comprar.</p>
           </div>
-          <form className="grid gap-3">
-            <input className="rounded-md border border-gold/30 px-4 py-3 outline-none focus:border-terracotta" placeholder="Nombre" />
-            <input className="rounded-md border border-gold/30 px-4 py-3 outline-none focus:border-terracotta" placeholder="Email o WhatsApp" />
-            <Button type="button" href={`https://wa.me/${WHATSAPP_NUMBER}`}>Contactar por WhatsApp</Button>
-          </form>
+          <div className="flex items-center md:justify-end"><Button href={`https://wa.me/${WHATSAPP_NUMBER}`}>Contactar por WhatsApp</Button></div>
         </div>
       </section>
     </main>

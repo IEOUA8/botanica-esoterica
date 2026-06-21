@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react'
+import { Search } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import api from '../../services/api'
 import { formatCurrency } from '../../utils/format'
+import { EmptyState, ErrorState, LoadingState } from '../../components/ui/AsyncState'
 
 const orderTransitions = {
   Nuevo: ['Confirmado', 'Cancelado'],
@@ -16,12 +18,27 @@ const shippingStatuses = ['Pendiente de despacho', 'En preparación', 'Despachad
 export default function AdminOrders() {
   const [orders, setOrders] = useState([])
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [query, setQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState('')
+
+  const filteredOrders = useMemo(() => {
+    const term = query.trim().toLowerCase()
+    return orders.filter((order) => {
+      const matchesTerm = !term || `${order.orderNumber} ${order.customer.fullName} ${order.customer.phone}`.toLowerCase().includes(term)
+      return matchesTerm && (!statusFilter || order.orderStatus === statusFilter)
+    })
+  }, [orders, query, statusFilter])
 
   function load() {
-    api.get('/admin/orders').then((res) => setOrders(res.data)).catch(() => setError('No se pudieron cargar los pedidos.'))
+    setLoading(true)
+    api.get('/admin/orders').then((res) => setOrders(res.data)).catch(() => setError('No se pudieron cargar los pedidos.')).finally(() => setLoading(false))
   }
 
-  useEffect(load, [])
+  useEffect(() => {
+    const timer = setTimeout(load, 0)
+    return () => clearTimeout(timer)
+  }, [])
 
   async function update(order, route, payload) {
     setError('')
@@ -36,9 +53,13 @@ export default function AdminOrders() {
   return (
     <section>
       <h1 className="font-display text-5xl font-bold text-forest">Pedidos</h1>
-      {error && <p className="mt-4 rounded-md bg-red-50 p-3 text-sm font-semibold text-red-700">{error}</p>}
-      <div className="mt-8 overflow-hidden rounded-lg border border-gold/20 bg-white shadow-soft">
-        {orders.length ? orders.map((order) => (
+      <div className="mt-6 grid gap-3 rounded-lg border border-gold/20 bg-white p-4 md:grid-cols-[1fr_240px]">
+        <label className="relative"><span className="sr-only">Buscar pedidos</span><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-incense/50" size={18} /><input className="h-11 w-full rounded-md border border-gold/30 pl-10 pr-3" placeholder="Pedido, cliente o teléfono" value={query} onChange={(event) => setQuery(event.target.value)} /></label>
+        <label><span className="sr-only">Filtrar por estado</span><select className="h-11 w-full rounded-md border border-gold/30 px-3" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}><option value="">Todos los estados</option>{Object.keys(orderTransitions).map((status) => <option key={status}>{status}</option>)}</select></label>
+      </div>
+      {error && <div className="mt-4"><ErrorState message={error} onRetry={load} /></div>}
+      {loading ? <div className="mt-8"><LoadingState /></div> : filteredOrders.length ? <div className="mt-8 overflow-hidden rounded-lg border border-gold/20 bg-white shadow-soft">
+        {filteredOrders.map((order) => (
           <article key={order._id} className="grid gap-4 border-b border-gold/10 p-5 xl:grid-cols-[1fr_150px_180px_180px] xl:items-center">
             <div>
               <h2 className="font-display text-2xl font-bold text-forest">{order.orderNumber}</h2>
@@ -50,10 +71,8 @@ export default function AdminOrders() {
             <Select value={order.paymentStatus} options={paymentStatuses} onChange={(value) => update(order, 'payment-status', { paymentStatus: value })} />
             <Select value={order.shippingStatus} options={shippingStatuses} onChange={(value) => update(order, 'shipping-status', { shippingStatus: value })} />
           </article>
-        )) : (
-          <div className="p-10 text-center font-semibold text-forest">Aún no hay pedidos.</div>
-        )}
-      </div>
+        ))}
+      </div> : <div className="mt-8"><EmptyState message={orders.length ? 'No hay pedidos con esos filtros.' : 'Aún no hay pedidos.'} /></div>}
     </section>
   )
 }

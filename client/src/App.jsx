@@ -1,18 +1,22 @@
+import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import PublicLayout from './components/layout/PublicLayout'
 import AdminLayout from './components/layout/AdminLayout'
 import ProtectedRoute from './routes/ProtectedRoute'
-import Home from './pages/public/Home'
-import Catalog from './pages/public/Catalog'
-import ProductDetail from './pages/public/ProductDetail'
-import Cart from './pages/public/Cart'
-import Checkout from './pages/public/Checkout'
-import Confirmation from './pages/public/Confirmation'
-import StaticPage from './pages/public/StaticPage'
-import Login from './pages/admin/Login'
-import Dashboard from './pages/admin/Dashboard'
-import AdminProducts from './pages/admin/AdminProducts'
-import AdminOrders from './pages/admin/AdminOrders'
+import { LoadingState } from './components/ui/AsyncState'
+
+const Home = lazy(() => import('./pages/public/Home'))
+const Catalog = lazy(() => import('./pages/public/Catalog'))
+const ProductDetail = lazy(() => import('./pages/public/ProductDetail'))
+const Cart = lazy(() => import('./pages/public/Cart'))
+const Checkout = lazy(() => import('./pages/public/Checkout'))
+const Confirmation = lazy(() => import('./pages/public/Confirmation'))
+const StaticPage = lazy(() => import('./pages/public/StaticPage'))
+const Login = lazy(() => import('./pages/admin/Login'))
+const Dashboard = lazy(() => import('./pages/admin/Dashboard'))
+const AdminProducts = lazy(() => import('./pages/admin/AdminProducts'))
+const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'))
+const AdminCategories = lazy(() => import('./pages/admin/AdminCategories'))
 
 function StaticRoute() {
   const location = useLocation()
@@ -21,7 +25,8 @@ function StaticRoute() {
 
 export default function App() {
   return (
-    <Routes>
+    <Suspense fallback={<main className="section-shell py-16"><LoadingState /></main>}>
+      <Routes>
       <Route element={<PublicLayout />}>
         <Route index element={<Home />} />
         <Route path="tienda" element={<Catalog />} />
@@ -42,11 +47,13 @@ export default function App() {
         <Route path="admin" element={<AdminLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="productos" element={<AdminProducts />} />
+          <Route path="categorias" element={<AdminCategories />} />
           <Route path="pedidos" element={<AdminOrders />} />
         </Route>
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+      </Routes>
+    </Suspense>
   )
 }

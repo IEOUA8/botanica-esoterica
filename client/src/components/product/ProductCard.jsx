@@ -11,7 +11,7 @@ export default function ProductCard({ product }) {
   return (
     <article className="overflow-hidden rounded-lg border border-gold/20 bg-white shadow-soft">
       <Link to={`/producto/${product.slug}`} className="block aspect-[4/3] overflow-hidden bg-ritual">
-        <img className="h-full w-full object-cover transition duration-500 hover:scale-105" src={product.mainImage} alt={product.name} />
+        <img className="h-full w-full object-cover transition duration-500 hover:scale-105" src={product.mainImage} alt={product.name} loading="lazy" decoding="async" />
       </Link>
       <div className="p-5">
         <div className="flex items-center justify-between gap-3">

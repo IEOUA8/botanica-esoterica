@@ -2,6 +2,7 @@ import { Boxes, PackageCheck, Send, ShoppingBag, TrendingUp, TriangleAlert } fro
 import { useEffect, useState } from 'react'
 import api from '../../services/api'
 import { formatCurrency } from '../../utils/format'
+import { ErrorState, LoadingState } from '../../components/ui/AsyncState'
 
 const cards = [
   ['totalProducts', 'Total productos', Boxes],
@@ -14,14 +15,23 @@ const cards = [
 
 export default function Dashboard() {
   const [stats, setStats] = useState({})
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [requestVersion, setRequestVersion] = useState(0)
 
   useEffect(() => {
-    api.get('/admin/dashboard/stats').then((res) => setStats(res.data))
-  }, [])
+    const timer = setTimeout(() => {
+      setLoading(true)
+      setError('')
+      api.get('/admin/dashboard/stats').then((res) => setStats(res.data)).catch(() => setError('No se pudo cargar el dashboard.')).finally(() => setLoading(false))
+    }, 0)
+    return () => clearTimeout(timer)
+  }, [requestVersion])
 
   return (
     <section>
       <h1 className="font-display text-5xl font-bold text-forest">Dashboard</h1>
+      {loading ? <div className="mt-8"><LoadingState /></div> : error ? <div className="mt-8"><ErrorState message={error} onRetry={() => setRequestVersion((value) => value + 1)} /></div> : (
       <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {cards.map(([key, label, Icon]) => (
           <article key={key} className="rounded-lg border border-gold/20 bg-white p-6 shadow-soft">
@@ -31,6 +41,7 @@ export default function Dashboard() {
           </article>
         ))}
       </div>
+      )}
     </section>
   )
 }
