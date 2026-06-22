@@ -1,6 +1,6 @@
 import { AlertTriangle, Package, Search } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ErrorState, LoadingState } from '../../components/ui/AsyncState'
+import { LoadingState } from '../../components/ui/AsyncState'
 import api from '../../services/api'
 import { formatCurrency } from '../../utils/format'
 

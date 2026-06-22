@@ -4,6 +4,7 @@
   "private": true,
   "description": "Tienda online full stack para Botánica Esotérica Internacional.",
   "scripts": {
+    "setup:local": "bash scripts/setup-local.sh",
     "dev": "concurrently -n API,WEB -c green,magenta \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
     "build": "npm run build --prefix client",
     "start": "npm run start --prefix server",

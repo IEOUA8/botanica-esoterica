@@ -1,5 +1,4 @@
 import { ArrowRight } from 'lucide-react'
-import { Link } from 'react-router-dom'
 import Logo from '../../components/ui/Logo'
 import Button from '../../components/ui/Button'
 

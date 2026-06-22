@@ -19,5 +19,7 @@ server/.env.*
 
 client/dist/
 coverage/
+playwright-report/
+test-results/
 *.log
 .DS_Store

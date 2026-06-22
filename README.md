@@ -11,12 +11,15 @@ Aplicación full stack para ecommerce público y panel administrador privado.
 ## Ejecutar en desarrollo
 
 ```bash
-npm ci
-npm ci --prefix server
-npm ci --prefix client
-npm run db:up
+npm run setup:local
 npm run dev
 ```
+
+`setup:local` instala las dependencias, crea los archivos `.env` que falten,
+genera un `JWT_SECRET` local y levanta MongoDB. Las configuraciones existentes
+no se sobrescriben y los `.env` permanecen excluidos de Git.
+
+Requisitos: Node.js 22 (consulta `.nvmrc`) y Docker Desktop.
 
 URLs:
 

@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { Route, Routes, useLocation } from 'react-router-dom'
 import PublicLayout from './components/layout/PublicLayout'
 import AdminLayout from './components/layout/AdminLayout'
 import ProtectedRoute from './routes/ProtectedRoute'

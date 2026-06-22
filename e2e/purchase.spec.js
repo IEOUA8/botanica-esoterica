@@ -24,7 +24,7 @@ test.describe('Purchase flow', () => {
   test('product detail page loads', async ({ page }) => {
     await page.goto('/tienda');
     // Click the first product link
-    const firstProduct = page.locator('a[href*="/tienda/"]').first();
+    const firstProduct = page.locator('a[href*="/producto/"]').first();
     await expect(firstProduct).toBeVisible({ timeout: 10000 });
     const href = await firstProduct.getAttribute('href');
     await page.goto(href);
@@ -34,8 +34,8 @@ test.describe('Purchase flow', () => {
 
   test('add to cart and see cart count update', async ({ page }) => {
     await page.goto('/tienda');
-    const firstProduct = page.locator('a[href*="/tienda/"]').first();
-    await firstProduct.click();
+    const firstProduct = page.locator('a[href*="/producto/"]').first();
+    await page.goto(await firstProduct.getAttribute('href'));
     // Find and click add to cart button
     const addBtn = page.getByRole('button', { name: /agregar|carrito|añadir/i }).first();
     await expect(addBtn).toBeVisible({ timeout: 8000 });
@@ -58,7 +58,7 @@ test.describe('Purchase flow', () => {
       const state = {
         state: {
           items: [{
-            _id: 'kit-abundancia-dorada',
+            _id: 'prod-1',
             slug: 'kit-abundancia-dorada',
             name: 'Kit de Abundancia Dorada',
             price: 89000,
@@ -79,7 +79,7 @@ test.describe('Purchase flow', () => {
     await page.getByRole('button', { name: /finalizar/i }).click();
 
     // Validation errors should appear
-    await expect(page.getByText(/nombre completo/i)).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText('Escribe tu nombre completo.')).toBeVisible({ timeout: 5000 });
   });
 
   test('complete checkout flow with demo data', async ({ page }) => {
@@ -89,7 +89,7 @@ test.describe('Purchase flow', () => {
       const state = {
         state: {
           items: [{
-            _id: 'kit-abundancia-dorada',
+            _id: 'prod-1',
             slug: 'kit-abundancia-dorada',
             name: 'Kit de Abundancia Dorada',
             price: 89000,

@@ -6,7 +6,7 @@ const ADMIN_PASSWORD = 'TestPassword123';
 test.describe('Admin panel', () => {
   test('login page renders correctly', async ({ page }) => {
     await page.goto('/admin/login');
-    await expect(page.getByRole('heading', { name: /acceso/i })).toBeVisible({ timeout: 8000 });
+    await expect(page.getByRole('heading', { name: 'Administrador' })).toBeVisible({ timeout: 8000 });
     await expect(page.getByRole('textbox', { name: /email/i })).toBeVisible();
   });
 
@@ -25,7 +25,7 @@ test.describe('Admin panel', () => {
     await page.getByRole('button', { name: /ingresar|entrar|login|acceder/i }).click();
 
     await expect(page).toHaveURL(/admin(?!\/login)/, { timeout: 10000 });
-    await expect(page.getByText(/dashboard|bienvenido|pedidos/i)).toBeVisible({ timeout: 8000 });
+    await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible({ timeout: 8000 });
   });
 
   test('protected route redirects unauthenticated users to login', async ({ page }) => {
@@ -57,7 +57,7 @@ test.describe('Admin panel', () => {
 
     await page.getByRole('link', { name: /productos/i }).first().click();
     await expect(page).toHaveURL(/productos/);
-    // Products table or list should appear
-    await expect(page.locator('table, [role="table"], ul').first()).toBeVisible({ timeout: 8000 });
+    await expect(page.getByRole('heading', { name: 'Productos', exact: true })).toBeVisible({ timeout: 8000 });
+    await expect(page.locator('article').first()).toBeVisible({ timeout: 8000 });
   });
 });

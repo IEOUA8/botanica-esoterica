@@ -1,5 +1,5 @@
 import { ArrowLeft, MessageCircle, Save } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { EmptyState, ErrorState, LoadingState } from '../../components/ui/AsyncState'
 import Button from '../../components/ui/Button'
@@ -34,7 +34,7 @@ export default function AdminOrderDetail() {
   const [saving, setSaving] = useState(false)
   const [note, setNote] = useState('')
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true)
     setError('')
     try {
@@ -46,11 +46,11 @@ export default function AdminOrderDetail() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [id])
 
   useEffect(() => {
     load()
-  }, [id])
+  }, [load])
 
   async function updateField(route, payload) {
     setSaving(true)
