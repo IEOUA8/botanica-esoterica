@@ -5,16 +5,25 @@
   "main": "src/server.js",
   "scripts": {
     "dev": "nodemon src/server.js",
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "test": "jest",
+    "test:unit": "jest --testPathPatterns=__tests__/unit",
+    "test:integration": "jest --testPathPatterns=__tests__/integration",
+    "test:coverage": "jest --coverage"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "nodemonConfig": {
-    "watch": ["src"],
+    "watch": [
+      "src"
+    ],
     "ext": "js,json",
-    "ignore": ["node_modules", ".node_modules*"]
+    "ignore": [
+      "node_modules",
+      ".node_modules*"
+    ]
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -29,6 +38,8 @@
     "slugify": "^1.6.9"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "jest": "^30.4.2",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.2.2"
   }
 }

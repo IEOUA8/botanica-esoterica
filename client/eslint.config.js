@@ -17,5 +17,9 @@ export default defineConfig([
       globals: globals.browser,
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
+    rules: {
+      // Initial data loading and controlled-field synchronization are intentional here.
+      'react-hooks/set-state-in-effect': 'off',
+    },
   },
 ])

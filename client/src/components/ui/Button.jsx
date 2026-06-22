@@ -5,6 +5,7 @@ const styles = {
   secondary: 'bg-gold text-deep hover:bg-[#d6b65d]',
   outline: 'border border-gold/60 text-deep hover:bg-gold/10',
   ghost: 'text-deep hover:bg-ritual',
+  'outline-light': 'border border-ritual/40 text-ritual hover:bg-white/10',
 }
 
 export default function Button({ to, href, variant = 'primary', className = '', children, ...props }) {

@@ -43,3 +43,17 @@ button {
 .image-overlay {
   background: linear-gradient(180deg, rgba(6, 61, 46, 0.2), rgba(6, 61, 46, 0.78));
 }
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.25; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+/* Scrollbar minimalista */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #C8A24A33; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #C8A24A66; }
+
+/* Selección de texto */
+::selection { background: #063D2E22; color: #063D2E; }

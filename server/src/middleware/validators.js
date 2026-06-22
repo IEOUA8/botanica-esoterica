@@ -21,6 +21,8 @@ const catalogQueryValidation = [
   query('intention').optional().trim().isLength({ max: 100 }),
   query('search').optional().trim().isLength({ max: 100 }),
   query('sort').optional().isIn(['price_asc', 'price_desc', 'best_seller', 'newest']).withMessage('Orden inválido.'),
+  query('page').optional().isInt({ min: 1, max: 100000 }).toInt(),
+  query('limit').optional().isInt({ min: 1, max: 48 }).toInt(),
 ];
 
 const slugValidation = [identifier('slug')];

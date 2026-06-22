@@ -4,10 +4,16 @@
   "private": true,
   "description": "Tienda online full stack para Botánica Esotérica Internacional.",
   "scripts": {
+    "setup:local": "bash scripts/setup-local.sh",
     "dev": "concurrently -n API,WEB -c green,magenta \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
     "build": "npm run build --prefix client",
     "start": "npm run start --prefix server",
     "lint": "npm run lint --prefix client",
+    "test": "npm run test --prefix server && npm run test --prefix client",
+    "test:backend": "npm run test --prefix server",
+    "test:frontend": "npm run test --prefix client",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
     "db:logs": "docker compose logs -f mongo"
@@ -21,6 +27,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@playwright/test": "^1.61.0",
     "concurrently": "^10.0.3"
   }
 }

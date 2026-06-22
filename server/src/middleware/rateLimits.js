@@ -1,8 +1,11 @@
 const { rateLimit } = require('express-rate-limit');
 
+const skip = () => process.env.NODE_ENV === 'test';
+
 const common = {
   standardHeaders: true,
   legacyHeaders: false,
+  skip,
   message: { message: 'Demasiadas solicitudes. Intenta nuevamente más tarde.' },
 };
 

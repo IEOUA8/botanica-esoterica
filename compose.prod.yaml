@@ -1,0 +1,110 @@
+# Production Docker Compose
+# Usage: docker compose -f compose.prod.yaml up -d
+#
+# Prerequisites:
+#   - Create ./server/.env.production with all required variables (see .env.example)
+#   - Set VITE_API_URL and VITE_WHATSAPP_NUMBER as build args or in the environment
+#
+# HTTPS is handled by Traefik (see labels) or by an external reverse proxy.
+# If deploying without Traefik, remove all labels.traefik.* and manage TLS externally.
+
+services:
+  api:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: botanica-api
+    env_file: ./server/.env.production
+    restart: unless-stopped
+    networks:
+      - internal
+      - web
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:5001/api/health | grep -q '\"status\":\"ok\"' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+    labels:
+      - "traefik.enable=false"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-https://api.botanica.example.com/api}
+        VITE_WHATSAPP_NUMBER: ${VITE_WHATSAPP_NUMBER:-573001112233}
+    container_name: botanica-web
+    restart: unless-stopped
+    networks:
+      - internal
+      - web
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/ | grep -q '<html' || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.botanica.rule=Host(`${DOMAIN:-botanica.example.com}`)"
+      - "traefik.http.routers.botanica.entrypoints=websecure"
+      - "traefik.http.routers.botanica.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.botanica-http.rule=Host(`${DOMAIN:-botanica.example.com}`)"
+      - "traefik.http.routers.botanica-http.entrypoints=web"
+      - "traefik.http.routers.botanica-http.middlewares=redirect-https"
+      - "traefik.http.middlewares.redirect-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-https.redirectscheme.permanent=true"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    depends_on:
+      api:
+        condition: service_healthy
+
+  mongo:
+    image: mongo:8.0
+    container_name: botanica-mongo
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    restart: unless-stopped
+    networks:
+      - internal
+    volumes:
+      - botanica_mongo_data:/data/db
+      - botanica_mongo_backups:/backups
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - |
+          mongosh --quiet --eval "try { rs.status().ok } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'localhost:27017'}]}).ok }" | grep 1
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  internal:
+    driver: bridge
+  web:
+    external: true
+
+volumes:
+  botanica_mongo_data:
+    driver: local
+  botanica_mongo_backups:
+    driver: local

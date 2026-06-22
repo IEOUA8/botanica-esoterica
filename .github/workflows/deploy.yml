@@ -1,0 +1,76 @@
+name: Deploy to Production
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+# Only deploy when CI passes on main
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    environment: production
+    concurrency:
+      group: production-deploy
+      cancel-in-progress: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./server
+          push: true
+          tags: ghcr.io/${{ github.repository }}/api:${{ github.sha }},ghcr.io/${{ github.repository }}/api:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push web image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./client
+          push: true
+          build-args: |
+            VITE_API_URL=${{ vars.VITE_API_URL }}
+            VITE_WHATSAPP_NUMBER=${{ vars.VITE_WHATSAPP_NUMBER }}
+          tags: ghcr.io/${{ github.repository }}/web:${{ github.sha }},ghcr.io/${{ github.repository }}/web:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy to server via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd /opt/botanica
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            docker pull ghcr.io/${{ github.repository }}/api:${{ github.sha }}
+            docker pull ghcr.io/${{ github.repository }}/web:${{ github.sha }}
+            export API_IMAGE=ghcr.io/${{ github.repository }}/api:${{ github.sha }}
+            export WEB_IMAGE=ghcr.io/${{ github.repository }}/web:${{ github.sha }}
+            docker compose -f compose.prod.yaml up -d --no-build api web
+            docker compose -f compose.prod.yaml exec -T api wget -qO- http://localhost:5001/api/health | grep '"status":"ok"'
+            docker image prune -f
+            echo "Deploy ${{ github.sha }} complete."
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "Deploy FAILED for commit ${{ github.sha }}"
+          # Add Slack/email notification here if needed

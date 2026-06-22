@@ -1,10 +1,12 @@
-import { LogOut, Package, ShoppingBag, Sparkles } from 'lucide-react'
+import { Boxes, LogOut, Package, ShoppingBag, Sparkles, Tags } from 'lucide-react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { clearToken } from '../../utils/auth'
 
 const links = [
   ['Dashboard', '/admin', Sparkles],
   ['Productos', '/admin/productos', Package],
+  ['Categorías', '/admin/categorias', Tags],
+  ['Inventario', '/admin/inventario', Boxes],
   ['Pedidos', '/admin/pedidos', ShoppingBag],
 ]
 
